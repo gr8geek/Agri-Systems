@@ -10,7 +10,8 @@ const app = express();
 connectDB();
 
 app.get("/", (req, res) => {
-  res.send({ msg: "Api Running" });
+  // res.send({ msg: "Api Running" });
+  res.render("index");
 });
 
 // middleware
@@ -27,6 +28,26 @@ app.set("views", path.join(__dirname, "/public/views"));
 app.use("/api/users", require("./src/routers/api/userRouter"));
 
 const PORT = process.env.PORT || 5000;
+
+app.get("/contact", function(req, res){
+  res.render("contact");
+});
+
+app.get("/news", function(req, res){
+  res.render("news");
+});
+
+app.get("/projects", function(req, res){
+  res.render("projects");
+});
+
+app.get("/service", function(req, res){
+  res.render("service-detail");
+});
+
+
+
+
 
 app.listen(PORT, () => {
   console.log("Server started on port", PORT);
