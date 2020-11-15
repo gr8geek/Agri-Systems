@@ -25,12 +25,20 @@ SECRET_KEY = '3++w&a$il1*v8hnj0u7w7@u-%w(t$0d3@@rf=@e0u7#a8$0i36'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    '491c561ac23b.ngrok.io',
+    'localhost',
+    'https://odd-wolverine-68.loca.lt',
+    'bitter-walrus-37.loca.lt',
+    'fast-dragon-49.loca.lt',
+]
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'mlapp',
+    'django_extensions',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

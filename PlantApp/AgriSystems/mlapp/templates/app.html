@@ -1,0 +1,211 @@
+<!doctype html>
+
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+
+    <!-- Compiled and minified JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+    <style>
+        
+    /* CSS comes here */
+    #video {
+        width:300px;
+    }
+
+    #photo {
+        border: 1px solid black;
+        width: 320px;
+        height: 240px;
+    }
+
+    #canvas {
+        display: none;
+    }
+
+    .camera {
+        width: 100%;
+        display: inline-block;
+    }
+
+    .output {
+        width: 340px;
+        display: inline-block;
+    }
+
+    #startbutton {
+        width:50%;
+        height:50px;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        bottom: 36px;
+        padding: 5px;
+        background-color: #6a67ce;
+        border: 1px solid rgba(255, 255, 255, 0.7);
+        font-size: 14px;
+        color: rgba(255, 255, 255, 1.0);
+        cursor: pointer;
+    }
+    .upload{
+        width:50%;
+        height:50px;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        bottom: 36px;
+        padding: 5px;
+        background-color: #6a67ce;
+        border: 1px solid rgba(255, 255, 255, 0.7);
+        font-size: 14px;
+        color: rgba(255, 255, 255, 1.0);
+        cursor: pointer;
+
+    }
+    .contentarea {
+        font-size: 16px;
+        font-family: Arial;
+        text-align: center;
+    }
+    </style>
+    <title>My Favorite Sport</title>
+</head>
+
+<body>
+    <nav>
+        <div class="nav-wrapper">
+          <a style="margin:10px;"href="#" class="brand-logo">AgriNet</a>
+          <ul id="nav-mobile" class="right hide-on-med-and-down">
+            <li><a href="collapsible.html"></a></li>
+          </ul>
+        </div>
+      </nav>
+            
+    
+    <div class="container">
+        <div class="col">
+            <div class="camera row s12 center">
+                <video id="video">Video stream not available.</video>
+            </div>
+            <br>
+            <div><button id="startbutton">Take photo</button></div>
+            <br>
+
+
+            <canvas id="canvas"></canvas>
+            <br><br>
+            <!--
+            <div class="output s12 center">
+                <img id="photo" alt="The screen capture will appear in this box.">
+            </div>
+
+            -->
+            <div id="data12"></div>
+
+        </div>
+        
+        </div>
+    <script>
+    /* JS comes here */
+    (function() {
+
+        var width = 320; // We will scale the photo width to this
+        var height = 0; // This will be computed based on the input stream
+
+        var streaming = false;
+
+        var video = null;
+        var canvas = null;
+        var photo = null;
+        var startbutton = null;
+
+        function startup() {
+            video = document.getElementById('video');
+            canvas = document.getElementById('canvas');
+            photo = document.getElementById('photo');
+            startbutton = document.getElementById('startbutton');
+
+            navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode:"environment"
+                    },
+                    audio: false
+                })
+                .then(function(stream) {
+                    video.srcObject = stream;
+                    video.play();
+                })
+                .catch(function(err) {
+                    console.log("An error occurred: " + err);
+                });
+
+            video.addEventListener('canplay', function(ev) {
+                if (!streaming) {
+                    height = video.videoHeight / (video.videoWidth / width);
+
+                    if (isNaN(height)) {
+                        height = width / (4 / 3);
+                    }
+
+                    video.setAttribute('width', width);
+                    video.setAttribute('height', height);
+                    canvas.setAttribute('width', width);
+                    canvas.setAttribute('height', height);
+                    streaming = true;
+                }
+            }, false);
+
+            startbutton.addEventListener('click', function(ev) {
+                takepicture();
+                ev.preventDefault();
+            }, false);
+
+            clearphoto();
+        }
+
+
+        function clearphoto() {
+            var context = canvas.getContext('2d');
+            context.fillStyle = "#AAA";
+            context.fillRect(0, 0, canvas.width, canvas.height);
+
+            var data = canvas.toDataURL('image/png');
+            console.log(data)
+            
+            photo.setAttribute('src', data);
+        }
+
+        function takepicture() {
+            var context = canvas.getContext('2d');
+            if (width && height) {
+                canvas.width = width;
+                canvas.height = height;
+                context.drawImage(video, 0, 0, width, height);
+                var data = canvas.toDataURL('image/png');
+
+                var data1 = canvas.toDataURL('image/png').split(',')[1];
+                console.log(data1)
+                //console.log(data)
+                $.post("/prediction/upload/",{
+                        image:data1,
+                        csrfmiddlewaretoken: '{{ csrf_token }}'
+                }).then(obj=>{
+                    var res = document.getElementById("data12")
+                    res.innerHTML = ""
+                    res.innerHTML+=`
+                    <h5>Prediction</h5>
+                    <p style="color:red">${obj}</p>
+                    `
+                    
+                })
+                photo.setAttribute('src', data);
+            } else {
+                clearphoto();
+            }
+        }
+        window.addEventListener('load', startup, false);
+
+    })();
+    </script>
+</body>
+</html>
